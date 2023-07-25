@@ -1,11 +1,16 @@
 package tests;
 
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -14,14 +19,15 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.safari.SafariOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import utils.CSVHandler;
+import utils.TestDataGeneration;
 import utils.TimeUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-
-import utils.TestResultsWatcher;
-import utils.CSVHandler;
 
 import static tests.GlobalVariables.browserForTestingEnvVariableName;
 import static tests.GlobalVariables.cfuiURL;
@@ -34,18 +40,20 @@ import static tests.GlobalVariables.driver;
 import static tests.GlobalVariables.getEnvVariable;
 import static tests.GlobalVariables.isDebugModeEnabled;
 import static tests.GlobalVariables.isMobile;
+import static tests.GlobalVariables.localTempDirectoryLinux;
+import static tests.GlobalVariables.localTempDirectoryWindows;
+import static tests.GlobalVariables.operationSystem;
 import static tests.GlobalVariables.urlForTestingEnvVariable;
 import static tests.GlobalVariables.webDriverManager;
 
 //Execute tests in alphabetical order
 @TestMethodOrder(MethodOrderer.MethodName.class)
 
-//Enables the TestWatcher class, which monitors the test results (currently used only for taking screenshots if a test fails)
-@ExtendWith(TestResultsWatcher.class)
-public class ExampleBaseTest {
+public class BaseTest {
 
     //Executed before each test
-    @BeforeEach
+    //use Cucumbers Before annotation
+    @Before
     public void doBeforeEachTest() {
         pickBrowser(getEnvVariable(browserForTestingEnvVariableName, defaultBrowser));
 
@@ -68,7 +76,7 @@ public class ExampleBaseTest {
     //Picks which browser and browser options should be used for testing
     public static void pickBrowser(String browser) {
         switch (browser) {
-            case "chrome": {
+            case "chrome" -> {
                 webDriverManager = WebDriverManager.chromedriver();
                 webDriverManager.setup();
                 ChromeOptions chromeOptions = new ChromeOptions();
@@ -86,9 +94,8 @@ public class ExampleBaseTest {
                 chromeOptions.addArguments("--remote-allow-origins=*");
                 chromeOptions.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
                 driver = new ChromeDriver(chromeOptions);
-                break;
             }
-            case "firefox": {
+            case "firefox" -> {
                 webDriverManager = WebDriverManager.firefoxdriver();
                 webDriverManager.setup();
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
@@ -99,15 +106,13 @@ public class ExampleBaseTest {
                 firefoxOptions.addArguments("--lang=en_US");
                 firefoxOptions.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
                 driver = new FirefoxDriver(firefoxOptions);
-                break;
             }
-            case "safari": {
+            case "safari" -> {
                 webDriverManager = WebDriverManager.safaridriver();
                 webDriverManager.setup();
                 SafariOptions safariOptions = new SafariOptions();
-                break;
             }
-            case "mobile": {
+            case "mobile" -> {
                 webDriverManager = WebDriverManager.chromedriver();
                 webDriverManager.setup();
                 Map<String, String> mobileEmulation = new HashMap<>();
@@ -127,11 +132,46 @@ public class ExampleBaseTest {
                 mobileOptions.addArguments("--remote-allow-origins=*");
                 mobileOptions.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
                 driver = new ChromeDriver(mobileOptions);
-                break;
             }
         }
     }
 
+    //closes the browser, when the test is finished and takes a screenshot if a test fails
+    @After
+    public void afterMethod(Scenario scenario) {
+        if(scenario.isFailed()) {
+            String screenshotFileName = "";
+            if (operationSystem.contains("Windows")) {
+                screenshotFileName = localTempDirectoryWindows + scenario.getName() + "_" + TestDataGeneration.formatDate("hh-mm-ss_dd.MM", "bg") + ".jpeg";
+            }
+            if (operationSystem.contains("Linux")) {
+                screenshotFileName = localTempDirectoryLinux + scenario.getName() + "_" + TestDataGeneration.formatDate("hh-mm-ss_dd.MM", "bg") + ".jpeg";
+            }
+
+            takeScreenshot(driver, screenshotFileName);
+            System.out.println("Test failed! Screenshot saved to: \n" + screenshotFileName);
+        }
+        driver.quit();
+    }
+
+    public static void takeScreenshot(WebDriver webdriver, String fileWithPath) {
+        //Convert web driver object to TakeScreenshot
+        TakesScreenshot scrShot = ((TakesScreenshot) webdriver);
+
+        //Call getScreenshotAs method to create image file
+        File SrcFile = scrShot.getScreenshotAs(OutputType.FILE);
+
+        //Move image file to new destination
+        File DestFile = new File(fileWithPath);
+
+        //Copy file at destination
+        try {
+            FileUtils.copyFile(SrcFile, DestFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     //Scrolls the page to a desired element
     public static void scrollIntoView(WebElement element) {
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", element);
