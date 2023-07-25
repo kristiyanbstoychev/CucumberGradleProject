@@ -13,7 +13,7 @@ public class GlobalVariables {
 
     //---------Test setup variables---------//
     //variables storing the urls for testing
-    public final static String cfuiURL = "https://example.com";
+    public final static String cfuiURL = "https://www.saucedemo.com";
     public final static String boURL = "https://example.com/";
 
     //variable storing the currently used operating system
@@ -26,7 +26,7 @@ public class GlobalVariables {
     public static WebDriver driver;
 
     //default browser and device, used in cases where no environment variables are defined
-    public static final String defaultBrowser = "mobile";
+    public static final String defaultBrowser = "chrome";
     public static final String defaultDevice = "iPhone 6/7/8";
     //Samsung Galaxy S20 Ultra
     //Galaxy S9+
@@ -72,10 +72,10 @@ public class GlobalVariables {
     public static JSONObject registrationEmail = new JSONObject();
 
     //On site notifications
-    public static String registrationOnsiteNotification;
+    public static String exampleOnsiteNotification;
 
     //Pop-ups
-    public static String registrationPopUpMessage;
+    public static String examplePopUpMessage;
 
     //Method storing the content of the email and onsite notifications
     public static void setEmailAndNotificationsContent() {
@@ -85,10 +85,10 @@ public class GlobalVariables {
         registrationEmail.put(emailButton, "Example email button");
 
         //On site notifications
-        registrationOnsiteNotification = "example notification text";
+        exampleOnsiteNotification = "example notification text";
 
         //Pop-ups
-        registrationPopUpMessage = "example pop up message text";
+        examplePopUpMessage = "example pop up message text";
 
     }
 

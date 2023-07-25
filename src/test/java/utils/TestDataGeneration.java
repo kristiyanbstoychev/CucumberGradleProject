@@ -14,6 +14,7 @@ public class TestDataGeneration {
     public static String firstName = faker.name().firstName();
     public static String lastName = faker.name().lastName();
     public static String userName = faker.name().username();
+    public static String postCode = faker.address().zipCode();
 
     public static String formatDate(String requiredFormat, String region) {
         DateFormat dateFormat = new SimpleDateFormat(requiredFormat, new Locale(region));
