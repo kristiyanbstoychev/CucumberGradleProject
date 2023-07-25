@@ -23,7 +23,7 @@ Also by default the tests will run in headless a browser, unless debug mode is t
   
   https://www.demoblaze.com/
 
-  # CI/CD Setup
+  # CI/CD Setup using Jenkins
 To run any given Test Class from the command line
 
 ```
